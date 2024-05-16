@@ -141,3 +141,241 @@ void NovoCliente() {
     }
     printf("%d",quantidade_clientes);
 }
+
+void ApagaCliente() {
+    ler_clientes();
+    ler_extrato();
+    char cpf[15];
+    int cliente_encontrado = 0;
+
+    printf("Digite o CPF do cliente a ser apagado: ");
+    scanf("%s", cpf);
+
+    for (int i = 0; i < quantidade_clientes; i++) {
+        if (strcmp(lista_clientes[i].cpf, cpf) == 0) {
+            cliente_encontrado = 1;
+
+            // Remova o cliente da lista de clientes
+            for (int j = i; j < quantidade_clientes - 1; j++) {
+                strcpy(lista_clientes[j].nome, lista_clientes[j + 1].nome);
+                strcpy(lista_clientes[j].cpf, lista_clientes[j + 1].cpf);
+                strcpy(lista_clientes[j].tipo_conta, lista_clientes[j + 1].tipo_conta);
+                lista_clientes[j].saldo = lista_clientes[j + 1].saldo;
+                strcpy(lista_clientes[j].senha, lista_clientes[j + 1].senha);
+            }
+            quantidade_clientes--;
+
+            // Remova os registros do extrato associados ao cliente
+            for (int j = 0; j < quantidade_extrato; j++) {
+                if (strcmp(lista_extrato[j].cpf, cpf) == 0) {
+                    for (int k = j; k < quantidade_extrato - 1; k++) {
+                        strcpy(lista_extrato[k].nome, lista_extrato[k + 1].nome);
+                        strcpy(lista_extrato[k].cpf, lista_extrato[k + 1].cpf);
+                        strcpy(lista_extrato[k].tipo_conta, lista_extrato[k + 1].tipo_conta);
+                        strcpy(lista_extrato[k].extrato, lista_extrato[k + 1].extrato);
+                    }
+                    quantidade_extrato--;
+                    j--;  // Revisar a posição após a remoção
+                }
+            }
+
+            printf("Cliente foi excluído\n");
+            salvar_clientes();
+            salva_extrato();
+            break;
+        }
+    }
+
+    if (!cliente_encontrado) {
+        printf("Cliente não encontrado\n");
+    }
+}
+
+
+void ListarClientes() {
+    ler_clientes();
+    for (int i = 0; i < quantidade_clientes; i++) {
+        printf("Nome: %s\n", lista_clientes[i].nome);
+        printf("CPF: %s\n", lista_clientes[i].cpf);
+        printf("Tipo de conta: %s\n", lista_clientes[i].tipo_conta);
+        printf("Saldo: %.2lf\n", lista_clientes[i].saldo);
+        printf("\n");
+    }
+}
+
+void Debito() {
+    ler_clientes();
+    ler_extrato();
+    char cpf[15];
+    char senha[20];
+    double valor;
+
+    printf("Digite seu CPF: ");
+    scanf("%s", cpf);
+    printf("Digite sua senha: ");
+    scanf("%s", senha);
+    printf("Digite o valor a ser debitado: ");
+    scanf("%lf", &valor);
+
+    int cliente_encontrado = 0;
+    int indice_cliente = -1;
+    int indice_extrato = -1;
+
+    // Encontrar o cliente e o respectivo índice
+    for (int i = 0; i < quantidade_clientes; i++) {
+        if (strcmp(lista_clientes[i].cpf, cpf) == 0 && strcmp(lista_clientes[i].senha, senha) == 0) {
+            cliente_encontrado = 1;
+            indice_cliente = i;
+
+            // Encontrar o índice correspondente no extrato
+            for (int j = 0; j < quantidade_extrato; j++) {
+                if (strcmp(lista_extrato[j].cpf, cpf) == 0) {
+                    indice_extrato = j;
+                    break;
+                }
+            }
+
+            break;
+        }
+    }
+
+    if (cliente_encontrado) {
+        if (strcmp(lista_clientes[indice_cliente].tipo_conta, "plus") == 0) {
+            double taxa = valor * 0.03;
+            if (lista_clientes[indice_cliente].saldo - valor - taxa >= -5000.0) {
+                lista_clientes[indice_cliente].saldo -= valor + taxa;
+                printf("Valor debitado com sucesso\n");
+
+                if (indice_extrato != -1) {
+                    // Registrar a transação no extrato do cliente
+                    char transacao[100];
+                    snprintf(transacao, sizeof(transacao), "%.19s - Débito: %.2lf (Tarifa: %.2lf) Saldo: %.2lf\n", get_current_time(), valor, taxa, lista_clientes[indice_cliente].saldo);
+                    strcat(lista_extrato[indice_extrato].extrato, transacao);
+                    // Salvar o extrato atualizado
+                    salva_extrato();
+                } else {
+                    // Caso não encontre o índice no extrato, você pode optar por tratá-lo aqui
+                    printf("Erro ao encontrar o índice do extrato para o cliente.\n");
+                }
+                // Salvar os clientes atualizados
+                salvar_clientes();
+            } else {
+                printf("Saldo insuficiente (limite de crédito excedido)\n");
+            }
+        } else if (strcmp(lista_clientes[indice_cliente].tipo_conta, "comum") == 0) {
+            double taxa = valor * 0.05;
+            if (lista_clientes[indice_cliente].saldo - valor - taxa >= -1000.0) {
+                lista_clientes[indice_cliente].saldo -= valor + taxa;
+                printf("Valor debitado com sucesso\n");
+
+                if (indice_extrato != -1) {
+                    // Registrar a transação no extrato do cliente
+                    char transacao[100];
+                    snprintf(transacao, sizeof(transacao), "%.19s - Débito: %.2lf (Tarifa: %.2lf) Saldo: %.2lf\n", get_current_time(), valor, taxa, lista_clientes[indice_cliente].saldo);
+                    strcat(lista_extrato[indice_extrato].extrato, transacao);
+                    // Salvar o extrato atualizado
+                    salva_extrato();
+                } else {
+                    // Caso não encontre o índice no extrato, você pode optar por tratá-lo aqui
+                    printf("Erro ao encontrar o índice do extrato para o cliente.\n");
+                }
+                // Salvar os clientes atualizados
+                salvar_clientes();
+            } else {
+                printf("Saldo insuficiente (limite de crédito excedido)\n");
+            }
+        } else {
+            printf("Tipo de conta inválido\n");
+        }
+    } else {
+        printf("Senha ou CPF incorretos ou cliente não encontrado\n");
+    }
+}
+
+void Deposito() {
+    ler_clientes();
+    ler_extrato();
+    char cpf[15];
+    char senha[20];
+    double valor;
+
+    printf("Digite seu CPF: ");
+    scanf("%s", cpf);
+    printf("Digite sua senha: ");
+    scanf("%s", senha);
+    printf("Digite o valor a ser depositado: ");
+    scanf("%lf", &valor);
+
+    int cliente_encontrado = 0;
+    int indice_cliente = -1;
+    int indice_extrato = -1;
+
+    // Encontrar o cliente e o respectivo índice
+    for (int i = 0; i < quantidade_clientes; i++) {
+        if (strcmp(lista_clientes[i].cpf, cpf) == 0 && strcmp(lista_clientes[i].senha, senha) == 0) {
+            cliente_encontrado = 1;
+            indice_cliente = i;
+
+            // Encontrar o índice correspondente no extrato
+            for (int j = 0; j < quantidade_extrato; j++) {
+                if (strcmp(lista_extrato[j].cpf, cpf) == 0) {
+                    indice_extrato = j;
+                    break;
+                }
+            }
+
+            break;
+        }
+    }
+
+    if (cliente_encontrado) {
+        lista_clientes[indice_cliente].saldo += valor;
+        printf("Valor depositado com sucesso\n");
+
+        if (indice_extrato != -1) {
+            // Registrar a transação no extrato do cliente
+            char transacao[100];
+            snprintf(transacao, sizeof(transacao), "%.19s - Depósito: %.2lf, Saldo: %.2lf\n", get_current_time(), valor, lista_clientes[indice_cliente].saldo);
+            strcat(lista_extrato[indice_extrato].extrato, transacao);
+            // Salvar o extrato atualizado
+            salva_extrato();
+            // Salvar os clientes atualizados
+            salvar_clientes();
+        } else {
+            // Caso não encontre o índice no extrato, você pode optar por tratá-lo aqui
+            printf("Erro ao encontrar o índice do extrato para o cliente.\n");
+        }
+    } else {
+        printf("Senha ou CPF incorretos ou cliente não encontrado\n");
+    }
+}
+
+void Extrato() {
+    char cpf[15];
+    char senha[20];
+
+    printf("Digite seu CPF: ");
+    scanf("%s", cpf);
+    printf("Digite sua senha: ");
+    scanf("%s", senha);
+
+    for (int i = 0; i < quantidade_clientes; i++) {
+        if (strcmp(lista_clientes[i].cpf, cpf) == 0 && strcmp(lista_clientes[i].senha, senha) == 0) {
+            printf("Nome: %s\n", lista_extrato[i].nome);
+            printf("Tipo da conta: %s\n", lista_extrato[i].tipo_conta);
+
+            // Imprimir o extrato linha por linha
+            char* token = strtok(lista_extrato[i].extrato, "!");
+            while (token != NULL) {
+                printf("%s\n", token);
+                token = strtok(NULL, "!");
+            }
+
+            printf("\n");
+            return;
+        }
+    }
+
+    printf("Senha ou CPF incorretos\n");
+}
+
