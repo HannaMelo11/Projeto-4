@@ -47,13 +47,13 @@ O débito só pode ser efetuado se o CPF e a senha estiverem corretos.
 
 5. Depósito
 Realiza um depósito na conta do cliente com os seguintes dados solicitados:
-
 CPF
 Valor
-6. Extrato
+
+7. Extrato
 Gera um arquivo com o histórico de todas as operações realizadas na conta do cliente, incluindo valores e tarifas
 
-7. Transferência Entre Contas
+8. Transferência Entre Contas
 Realiza a transferência de um valor determinado de uma conta (Origem) para outra conta (Destino) com os seguintes dados solicitados:
 
 CPF (Origem)
