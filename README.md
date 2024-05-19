@@ -52,8 +52,11 @@ Valor
 
 7. Extrato
 Gera um arquivo com o histórico de todas as operações realizadas na conta do cliente, incluindo valores e tarifas
+(o arquivo.txt só vai aparecer dps que voce finalizar o programa)
 
-8. Transferência Entre Contas
+
+
+9. Transferência Entre Contas
 Realiza a transferência de um valor determinado de uma conta (Origem) para outra conta (Destino) com os seguintes dados solicitados:
 
 CPF (Origem)
