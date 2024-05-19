@@ -342,7 +342,16 @@ void Deposito() {
     }
 }
 
+struct Extrato {
+    char nome[100]; // Adicionando o nome do cliente ao extrato
+    char cpf[15];
+    char tipo_conta[50];
+    char extrato[1000];
+};
+
 void Extrato() {
+    ler_clientes();
+    ler_extrato();
     char cpf[15];
     char senha[20];
 
@@ -353,22 +362,25 @@ void Extrato() {
 
     for (int i = 0; i < quantidade_clientes; i++) {
         if (strcmp(lista_clientes[i].cpf, cpf) == 0 && strcmp(lista_clientes[i].senha, senha) == 0) {
-            printf("Nome: %s\n", lista_extrato[i].nome);
-            printf("Tipo da conta: %s\n", lista_extrato[i].tipo_conta);
+            FILE *arquivo;
+            arquivo = fopen("extrato.txt", "w"); // Abrindo o arquivo de texto para escrita
 
-            // Imprimir o extrato linha por linha
+            fprintf(arquivo, "Extrato de %s:\n\n", lista_clientes[i].nome); // Escrevendo o nome do cliente no arquivo
+
+            // Escrevendo o extrato linha por linha no arquivo
             char* token = strtok(lista_extrato[i].extrato, "!");
             while (token != NULL) {
-                printf("%s\n", token);
+                fprintf(arquivo, "%s\n", token);
                 token = strtok(NULL, "!");
             }
 
-            printf("\n");
+            fclose(arquivo); // Fechando o arquivo após escrever o extrato
+            printf("Extrato salvo com sucesso no arquivo 'extrato.txt'.\n");
             return;
         }
     }
 
-    printf("Senha ou CPF incorretos\n");
+    printf("Senha ou CPF incorretos.\n");
 }
 
 void TransferenciaEntreContas() {
