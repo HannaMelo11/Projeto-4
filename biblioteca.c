@@ -342,12 +342,7 @@ void Deposito() {
     }
 }
 
-struct Extrato {
-    char nome[100]; // Adicionando o nome do cliente ao extrato
-    char cpf[15];
-    char tipo_conta[50];
-    char extrato[1000];
-};
+
 
 void Extrato() {
     ler_clientes();
@@ -382,6 +377,7 @@ void Extrato() {
 
     printf("Senha ou CPF incorretos.\n");
 }
+
 
 void TransferenciaEntreContas() {
     ler_clientes();
